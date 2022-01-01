@@ -16,6 +16,7 @@ git clone https://github.com/DeadKper/Bitburner.git
 npm install
 npm run defs
 ```
+get .vscode/settings.json from the template branch before compiling
 
 ## How to use this template
 The template is on it's own branch, download that template if you want to work from scratch
