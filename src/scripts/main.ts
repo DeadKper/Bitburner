@@ -29,7 +29,7 @@ export async function main(ns: NS): Promise<void> {
         initLoop = Date.now()
         for (const script in SCRIPTS) {
             if (waitQueue[script] <= initLoop) {
-                ns.exec(SCRIPTS[script].file, host, 1)
+                ns.exec(SCRIPTS[script].file, host, 1, host)
                 await ns.sleep(waitTime)
                 while((scriptSleep = ns.readPort(MAIN_PORT)) == "NULL PORT DATA")
                     await ns.sleep(waitTime)
