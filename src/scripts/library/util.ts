@@ -38,6 +38,8 @@ export function getNukable(ns: NS, servers: string[]): string[] {
 export function getPurchased(ns: NS, servers: string[]): string[] {
     const array: string[] = []
     for (const server of servers) {
+        if (server === 'home')
+            continue
         if (ns.getServerRequiredHackingLevel(server) == 1
                 && ns.getServerBaseSecurityLevel(server) == 1
                 && ns.getServerNumPortsRequired(server) == 5)
@@ -53,7 +55,8 @@ export function getOptimal(ns: NS, servers: string[]): string {
         currentValue = ns.getServerMaxMoney(server) / (
             ns.getWeakenTime(server)
             / ns.getServerSecurityLevel(server)
-            * ns.getServerMinSecurityLevel(server)) // Aproximate min weaken time
+            * ns.getServerMinSecurityLevel(server))
+            * ns.getServerGrowth(server)
         if (currentValue >= optimalValue) {
             optimalValue = currentValue
             optimalServer = server

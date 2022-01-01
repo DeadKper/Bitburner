@@ -1,6 +1,7 @@
 import { Action, Dict, Script } from 'defs/Custom'
 import { NS } from 'defs/NetscriptDefinitions'
 
+export const RESERVED_RAM = 2.95 + 7
 export const ALT_SERVER = 'foodnstuff'
 export const MAIN_PORT = 1
 export const SCRIPTS: Dict<Script> = {
