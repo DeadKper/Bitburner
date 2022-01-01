@@ -1,0 +1,8 @@
+{
+	"ns-template": {
+		"scope": "typescript",
+		"prefix": ["nst", "nstemplate", "netscript"],
+		"body": "import { NS } from 'defs/NetscriptDefinitions'\n\nexport async function main(ns: NS): Promise<void> {\n\t$0\n}",
+		"description": "Base Netscript template"
+	}
+}

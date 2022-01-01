@@ -1,0 +1,7 @@
+node_modules/
+package-lock.json
+OAuth.js
+NetscriptDefinitions.d.ts
+Bitburner.d.ts
+.originaljs/
+out/
