@@ -5,3 +5,4 @@ NetscriptDefinitions.d.ts
 Bitburner.d.ts
 .originaljs/
 out/
+.vscode/settings.json
