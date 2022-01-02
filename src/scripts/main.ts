@@ -1,55 +1,63 @@
-import { Dict } from 'defs/Custom'
+import { Dict, ScriptType } from 'defs/Custom'
 import { NS } from 'defs/NetscriptDefinitions'
 import { SCRIPTS, MAIN_PORT, ALT_SERVER } from '/scripts/library/constants.js'
+import * as nt from '/scripts/library/notns.js'
 
 export async function main(ns: NS): Promise<void> {
     ns.disableLog('ALL')
     ns.clearLog()
-    const host = !ns.args[0] ? 'home' : ns.args[0] as string
+    const host = ns.getHostname()
     const waitTime = 250
     await ns.sleep(waitTime)
-    
+    ns.clearPort(MAIN_PORT)
+
     const waitQueue: Dict<number> = Object()
-    for (const script in SCRIPTS) {
-        ns.clearPort(MAIN_PORT)
+    for (const script in SCRIPTS)
         waitQueue[script] = 0
-    }
 
-    ns.exec(SCRIPTS['nuke'].file, 'home', 1)
+    let wait: number, scriptSleep: number, startTime = Date.now(), runTime: number
 
-    await ns.sleep(waitTime)
+    ns.exec(SCRIPTS['nuke'].file, host, 1)
+    while((scriptSleep = ns.readPort(MAIN_PORT)) == "NULL PORT DATA")
+        await ns.sleep(waitTime)
+    
+    runTime = Date.now() - startTime
+    wait = nt.round(startTime + scriptSleep - runTime, 'up')
+    waitQueue['nuke'] = wait
 
-    if (ns.getServerMaxRam('home') < 16 && host === 'home') {
-        ns.exec('/scripts/main.js', ALT_SERVER, 1, ALT_SERVER)
+    ns.print(`Executed 'nuke' (${runTime}/${wait - startTime} millis)`)
+
+    if (ns.getServerMaxRam('home') < 16 && host == 'home') {
+        ns.print(
+              `Not enougth ram on 'home' (${ns.getServerMaxRam('home')}/16)`
+            + `\nChanging to: ${ALT_SERVER}`
+        )
+        ns.exec('/scripts/main.js', ALT_SERVER, 1)
         return
     }
 
-    let wait = 0, scriptSleep = 0, initLoop = 0, runTime = 0, endTime = 0
     while (true) {
-        initLoop = Date.now()
+        startTime = Date.now()
         for (const script in SCRIPTS) {
-            if (waitQueue[script] <= initLoop) {
-                ns.exec(SCRIPTS[script].file, host, 1, host)
+            if (waitQueue[script] > startTime)
+                continue
+
+            ns.exec(SCRIPTS[script as ScriptType].file, host, 1, host)
+            await ns.sleep(waitTime)
+            while((scriptSleep = ns.readPort(MAIN_PORT)) == "NULL PORT DATA")
                 await ns.sleep(waitTime)
-                while((scriptSleep = ns.readPort(MAIN_PORT)) == "NULL PORT DATA")
-                    await ns.sleep(waitTime)
 
-                endTime = Date.now()
-                runTime = endTime - initLoop
-                wait = scriptSleep - runTime
-                waitQueue[script] = wait
+            runTime = Date.now() - startTime
+            wait = nt.round(startTime + scriptSleep - runTime, 'up')
+            waitQueue[script] = wait
 
-                ns.print(`Executed ${script} (${runTime}/${wait} millis)`)
-            }
+            ns.print(`Executed '${script}' (${runTime}/${wait - startTime} millis)`)
         }
 
         for (const script in waitQueue)
             if (waitQueue[script] < wait)
                 wait = waitQueue[script]
-            
-        if (wait < waitTime) 
-            wait = waitTime
 
-        await ns.sleep(wait)
+        await ns.sleep(startTime + waitTime < wait ? waitTime : wait - startTime)
     }
 }

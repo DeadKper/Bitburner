@@ -17,5 +17,6 @@ export async function main(ns: NS): Promise<void> {
             await ns.scp(ns.ls('home', '/scripts'), 'home', server)
     }
 
+    ns.clearPort(MAIN_PORT) // In case I decide to run a script while main is running
     ns.writePort(MAIN_PORT, 5 * 60 * 1000)
 }
