@@ -6,3 +6,4 @@ Bitburner.d.ts
 .originaljs/
 out/
 .vscode/settings.json
+/src/scripts/test.ts
