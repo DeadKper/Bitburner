@@ -13,8 +13,12 @@ export function getAvailableHacks(ns: NS): Hack[] {
     return hacks.filter(({ file }) => ns.fileExists(file, 'home'))
 }
 
-export function getRooted(ns: NS, servers: string[]): string[] {
+export function getRooted(ns: NS, servers: string[] | ((ns: NS) => string[])): string[] {
     const array: string[] = []
+
+    if (typeof servers === 'function')
+        servers = servers(ns)
+    
     for (const server of servers) {
         if (ns.hasRootAccess(server))
             array.push(server)
@@ -23,9 +27,13 @@ export function getRooted(ns: NS, servers: string[]): string[] {
     return array
 }
 
-export function getNukable(ns: NS, servers: string[]): string[] {
+export function getNukable(ns: NS, servers: string[] | ((ns: NS) => string[])): string[] {
     const availableHacks = getAvailableHacks(ns) 
     const array: string[] = []
+
+    if (typeof servers === 'function')
+        servers = servers(ns)
+    
     for (const server of servers) {
         if (ns.getServerRequiredHackingLevel(server) <= ns.getHackingLevel()
                 && ns.getServerNumPortsRequired(server) <= availableHacks.length)
@@ -35,8 +43,12 @@ export function getNukable(ns: NS, servers: string[]): string[] {
     return array
 }
 
-export function getPurchased(ns: NS, servers: string[]): string[] {
+export function getPurchased(ns: NS, servers: string[] | ((ns: NS) => string[])): string[] {
     const array: string[] = []
+
+    if (typeof servers === 'function')
+        servers = servers(ns)
+    
     for (const server of servers) {
         if (server === 'home')
             continue
@@ -49,14 +61,26 @@ export function getPurchased(ns: NS, servers: string[]): string[] {
     return array
 }
 
-export function getOptimal(ns: NS, servers: string[]): string {
-    let optimalServer = "n00dles", optimalValue = 0, currentValue: number
+export function getOptimalApprox(ns: NS, servers: string[] | ((ns: NS) => string[])): string {
+    let optimalServer = '', optimalValue = 0, currentValue: number
+
+    if (typeof servers === 'function')
+        servers = servers(ns)
+
+    if (ns.getServerMoneyAvailable('home') < 100000)
+        return 'n00dles'
+    
+    let minSec: number
     for (const server of servers) {
+        minSec = ns.getServerMinSecurityLevel(server)
         currentValue = ns.getServerMaxMoney(server) / (
-            ns.getWeakenTime(server)
-            / ns.getServerSecurityLevel(server)
-            * ns.getServerMinSecurityLevel(server))
-            * ns.getServerGrowth(server)
+              ns.getWeakenTime(server)
+            /   ( Math.pow(ns.getServerSecurityLevel(server), 1/2)
+                + minSec)
+            * ns.getServerMinSecurityLevel(server)
+            * Math.pow(ns.getServerRequiredHackingLevel(server), 1/5))
+            * Math.pow(ns.getServerGrowth(server), 3/7)
+        // ns.tprint(`${server}: ${currentValue}`) // Just leave it in case I want some tunning
         if (currentValue >= optimalValue) {
             optimalValue = currentValue
             optimalServer = server

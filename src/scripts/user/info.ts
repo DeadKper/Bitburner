@@ -1,5 +1,6 @@
 import { NS } from 'defs/NetscriptDefinitions'
-import { getNukable, getOptimal, getPurchased, getRooted, getServers } from '/scripts/library/util.js'
+import { getNukable, getOptimalApprox, getPurchased, getRooted, getServers } from '/scripts/library/util.js'
+import * as nt from '/scripts/library/notns.js'
 
 export async function main(ns: NS): Promise<void> {
     let target = ns.args[0] as string
@@ -16,19 +17,19 @@ export async function main(ns: NS): Promise<void> {
             ns.tprint(getPurchased(ns, servers))
             break
         case 'optimal':
-            target = getOptimal(ns, getRooted(ns, servers))
+            target = getOptimalApprox(ns, getRooted(ns, servers))
         default:
             money = ns.getServerMoneyAvailable(target)
             maxRam = ns.getServerMaxRam(target)
             useRam = ns.getServerUsedRam(target)
             ns.tprint(`\nPrinting info for server: '${target}'\n` +
                 `Rooted: ${ns.hasRootAccess(target)}\n` +
-                `Money: $${Math.round(money)}, ${Math.round(money / 
-                    ns.getServerMaxMoney(target) * 10000) / 100}%\n` +
+                `Money: $${nt.round(money)}, ${nt.round(money / 
+                    ns.getServerMaxMoney(target) * 100, 2)}%\n` +
                 `Growth: ${ns.getServerGrowth(target)}\n` +
-                `Security: ${Math.round(ns.getServerSecurityLevel(target) * 1000) / 1000}/`+
+                `Security: ${nt.round(ns.getServerSecurityLevel(target), 3)}/`+
                     `${ns.getServerMinSecurityLevel(target)}\n` +
                 `HackLevel: ${ns.getServerRequiredHackingLevel(target)}\n` +
-                `Ram: ${useRam}/${maxRam}GB, ${Math.round((maxRam - useRam) / maxRam * 10000) / 100}%`)
+                `Ram: ${useRam}/${maxRam}GB, ${nt.round((maxRam - useRam) / maxRam * 100, 2)}%`)
     }
 }
