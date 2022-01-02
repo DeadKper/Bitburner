@@ -19,9 +19,9 @@
     "outDir": "out/",
     "baseUrl": "src/",
     "paths": {
-      "defs/*": [ "../*.d.ts" ],
-      "/*.js": [ "*" ],
-      "*.js": [ "*" ],
+      "defs/*": [ "../*.d.ts" ], // Import definitions outside root dir
+      "/*.js": [ "*" ], // Import files as .js
+      "/*": [ "./*" ], // So auto completion works on imports, you'll need to add .js to manual imports
     }
   }
 }
